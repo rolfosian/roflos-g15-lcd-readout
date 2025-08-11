@@ -1,6 +1,6 @@
 # roflos-g15-lcd-readout
 
-Leveraging a few winapi features/shell commands + HWINFO64 gadget registry entries this applet shows the following on the Logitech G15 Keyboard LCD screen:
+Leveraging a few winapi features/shell commands + HWINFO64 gadget registry entries, this applet shows the following on the Logitech G15 Keyboard LCD screen:
 
 - Inbox Stats
 - CPU Power Draw (Watts)
