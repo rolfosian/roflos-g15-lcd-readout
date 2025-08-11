@@ -44,38 +44,38 @@ def get_last_input_time() -> str:
         return format_seconds(round(elapsed_ms / 1000.0))
     else:
         raise WinError(get_last_error())
-    
-def get_inbox_number() -> str:
-    EnumWindows = user32.EnumWindows
-    EnumWindowsProc = WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
-    GetWindowTextW = user32.GetWindowTextW
-    GetWindowTextLengthW = user32.GetWindowTextLengthW
-    GetWindowThreadProcessId = user32.GetWindowThreadProcessId
-    IsWindowVisible = user32.IsWindowVisible
 
-    def get_window_titles() -> list:
-        titles = []
+INBOX_IDENTIFIER = "Inbox ("
+EnumWindows = user32.EnumWindows
+EnumWindowsProc = WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+GetWindowTextW = user32.GetWindowTextW
+GetWindowTextLengthW = user32.GetWindowTextLengthW
+GetWindowThreadProcessId = user32.GetWindowThreadProcessId
+IsWindowVisible = user32.IsWindowVisible
 
-        def callback(hwnd, lParam):
-            if IsWindowVisible(hwnd):
-                length = GetWindowTextLengthW(hwnd)
-                if length > 0:
-                    pid = wintypes.DWORD()
-                    GetWindowThreadProcessId(hwnd, byref(pid))
-                    
-                    buffer = c_u_b(length + 1)
-                    GetWindowTextW(hwnd, buffer, length + 1)
-                    
-                    titles.append(buffer.value)
-                    
-            return True
+def get_window_titles(titles: dict) -> dict:
+    def callback(hwnd, lParam):
+        if IsWindowVisible(hwnd):
+            length = GetWindowTextLengthW(hwnd)
 
-        EnumWindows(EnumWindowsProc(callback), 0)
-        return titles
-    
-    for t in get_window_titles():
-        if t.startswith('Inbox ('):
-            return t[:11]
+            if length >= 11:
+                pid = wintypes.DWORD()
+                GetWindowThreadProcessId(hwnd, byref(pid))
+                
+                buffer = c_u_b(length + 1)
+                GetWindowTextW(hwnd, buffer, length + 1)
+                val = buffer.value
+                
+                titles[val[:7]] = val[:11]
+                
+        return True
+
+    EnumWindows(EnumWindowsProc(callback), 0)
+    return titles.get(INBOX_IDENTIFIER)
+
+def get_inbox_number(titles: dict) -> str:
+    titles.clear()
+    return get_window_titles(titles)
         
 sensor_cond = "Sensor"
 label_cond = "Label"
@@ -141,15 +141,17 @@ def main():
         misc = 'misc'
         inbox = 'inbox'
         idle = 'idle'
+        window_titles = {}
+        
         master[misc] = {}
         master[hwinfo] = get_hardware_stats()
-        master[misc][inbox] = get_inbox_number()
+        master[misc][inbox] = get_inbox_number(window_titles)
         master[misc][idle] = get_last_input_time()
         aux_event.set()
 
         while event.is_set():
             master[hwinfo] = get_hardware_stats()
-            master[misc][inbox] = get_inbox_number()
+            master[misc][inbox] = get_inbox_number(window_titles)
             master[misc][idle] = get_last_input_time()
             sleep(0.5)
             
