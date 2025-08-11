@@ -112,25 +112,3 @@ class Logi_LCD(WinDLL):
 
     def mono_reset_background_udk(self) -> int:
         return self.LogiLcdMonoResetBackgroundUDK()
-
-from PIL import Image, ImageDraw, ImageFont
-
-#Basic test class for monochrome image with custom text font and size
-class Bg:
-    def __init__(self, font:ImageFont):
-        self.bg = Image.new('1', (160, 43), 0)
-        self.row_height = 43 // 5
-        self.draw = ImageDraw.Draw(self.bg)
-        self.font = font
-
-    def write(self, row: int, text: str) -> None:
-        self.clear_row(row)
-        y_position = row * self.row_height + 2
-        self.draw.text((5, y_position), text, font=self.font, fill=255)
-
-    def clear_row(self, row: int) -> None:
-        y_position = row * self.row_height + 2
-        self.draw.rectangle([0, y_position, 160, y_position + self.row_height], fill=0)
-    
-    def to_bytes(self) -> bytes:
-        return self.bg.convert("L").tobytes()
