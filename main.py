@@ -53,7 +53,8 @@ GetWindowTextLengthW = user32.GetWindowTextLengthW
 GetWindowThreadProcessId = user32.GetWindowThreadProcessId
 IsWindowVisible = user32.IsWindowVisible
 
-def get_window_titles(titles: dict) -> dict:
+def get_inbox_number() -> dict:
+    titles = {}
     def callback(hwnd, lParam):
         if IsWindowVisible(hwnd):
             length = GetWindowTextLengthW(hwnd)
@@ -72,10 +73,6 @@ def get_window_titles(titles: dict) -> dict:
 
     EnumWindows(EnumWindowsProc(callback), 0)
     return titles.get(INBOX_IDENTIFIER)
-
-def get_inbox_number(titles: dict) -> str:
-    titles.clear()
-    return get_window_titles(titles)
         
 sensor_cond = "Sensor"
 label_cond = "Label"
@@ -141,17 +138,16 @@ def main():
         misc = 'misc'
         inbox = 'inbox'
         idle = 'idle'
-        window_titles = {}
-        
+
         master[misc] = {}
         master[hwinfo] = get_hardware_stats()
-        master[misc][inbox] = get_inbox_number(window_titles)
+        master[misc][inbox] = get_inbox_number()
         master[misc][idle] = get_last_input_time()
         aux_event.set()
 
         while event.is_set():
             master[hwinfo] = get_hardware_stats()
-            master[misc][inbox] = get_inbox_number(window_titles)
+            master[misc][inbox] = get_inbox_number()
             master[misc][idle] = get_last_input_time()
             sleep(0.5)
             
