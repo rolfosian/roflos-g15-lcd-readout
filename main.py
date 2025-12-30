@@ -6,6 +6,17 @@ from subprocess import check_output
 from datetime import datetime
 from time import sleep
 
+HWND_BROADCAST = 0xFFFF
+WM_SYSCOMMAND = 0x0112
+SC_MONITORPOWER = 0xF170
+def monitor_sleep() -> None:
+    windll.user32.PostMessageW(
+        HWND_BROADCAST,
+        WM_SYSCOMMAND,
+        SC_MONITORPOWER,
+        2
+    )
+
 dis_command = ["powercfg", "-requests"] # Requires administrator privileges
 dis_compare_string = "DISPLAY:\nNone."
 dis_compare_len = len(dis_compare_string)
@@ -206,6 +217,9 @@ def main():
             LCD.mono_set_text(3, f"{master[misc][idle]} {get_display_lock_status()} {GPU_CORE_VOLTAGE(gpu_data)} {datetime.now().strftime('%H:%M:%S')}")
             
             LCD.update()
+            
+            if (LCD.is_button_pressed(LOGI_LCD_MONO_BUTTON_0)):
+                monitor_sleep()
             
             sleep(1)
             
