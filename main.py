@@ -1,4 +1,5 @@
 from g15 import *
+from audiodevicetoggle import toggle_audio_if_2
 import threading
 from signal import signal, SIGINT
 from winreg import OpenKey, EnumValue, HKEY_CURRENT_USER
@@ -15,6 +16,22 @@ def monitor_sleep() -> None:
         WM_SYSCOMMAND,
         SC_MONITORPOWER,
         2
+    )
+
+VK_VOLUME_MUTE = 0xAD
+KEYEVENTF_KEYUP = 0x0002
+def toggle_mute() -> None:
+    windll.user32.keybd_event(
+        VK_VOLUME_MUTE,
+        0,
+        0,
+        0
+    )
+    windll.user32.keybd_event(
+        VK_VOLUME_MUTE,
+        0,
+        KEYEVENTF_KEYUP,
+        0
     )
 
 dis_command = ["powercfg", "-requests"] # Requires administrator privileges
@@ -220,6 +237,10 @@ def main():
             
             if (LCD.is_button_pressed(LOGI_LCD_MONO_BUTTON_0)):
                 monitor_sleep()
+            if (LCD.is_button_pressed(LOGI_LCD_MONO_BUTTON_1)):
+                toggle_mute()
+            if (LCD.is_button_pressed(LOGI_LCD_MONO_BUTTON_2)):
+                toggle_audio_if_2()
             
             sleep(1)
             
@@ -230,6 +251,8 @@ def main():
     
     while event.is_set():
         sleep(1)
+
     exit(0)
     
 main()
+
