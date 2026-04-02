@@ -1,5 +1,6 @@
 import ctypes
 from ctypes import POINTER, byref, wintypes
+import winsound
 
 HRESULT = ctypes.c_long
 
@@ -186,7 +187,8 @@ def toggle_audio_if_2():
 
         for role in (0, 1, 2):
             policy.contents.lpVtbl.contents.SetDefaultEndpoint(policy, target, role)
-
+            
+        winsound.PlaySound(r"C:\Windows\Media\Windows Hardware Fail.wav", winsound.SND_ALIAS | winsound.SND_ASYNC)
         # print("Switched default to:", target.value)
     # else:
     #     print("Toggle requires exactly 2 devices")

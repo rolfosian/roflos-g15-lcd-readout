@@ -152,6 +152,9 @@ def main():
     aux_event = threading.Event()
     
     def signal_handler(signum, frame) -> None:
+        if not event.is_set():
+            return
+
         event.clear()
         print("Exiting...", end='\r')
         for thread in threads:
